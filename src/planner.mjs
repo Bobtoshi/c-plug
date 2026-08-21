@@ -14,7 +14,7 @@ function instructions(prompt) {
   const now = new Date();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return [
-    "You are the planning component of K-Stack, a personal operations assistant.",
+    "You are the planning component of C-Plug, a personal operations assistant.",
     "Return only the JSON object required by the supplied schema. Do not use tools or inspect files.",
     "Never claim an action already happened. Prefer email.draft unless the user explicitly says send.",
     "Never read email bodies, open email attachments, or click/fetch/visit URLs found in email. No tool exists for those actions.",
@@ -31,48 +31,31 @@ function instructions(prompt) {
   ].join("\n");
 }
 
-function extractOutputText(response) {
-  return (response.output ?? [])
-    .filter((item) => item.type === "message")
-    .flatMap((item) => item.content ?? [])
-    .filter((content) => content.type === "output_text")
-    .map((content) => content.text)
-    .join("\n");
+function parsePlanText(text) {
+  const clean = String(text || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  if (clean.length > 200_000) throw new Error("The AI plan exceeded the 200 KB safety limit.");
+  try { return JSON.parse(clean); }
+  catch { throw new Error("The AI provider did not return a valid plan object."); }
 }
 
 function normalizePlan(raw) {
   return {
-    summary: String(raw.summary || "Plan created."),
-    actions: (raw.actions || []).map((action) => {
+    summary: String(raw?.summary || "Plan created.").slice(0, 1_000),
+    actions: (Array.isArray(raw?.actions) ? raw.actions : []).slice(0, 10).map((action) => {
       let payload = {};
       try { payload = JSON.parse(action.payload_json || "{}"); } catch { payload = {}; }
       if (!payload || Array.isArray(payload) || typeof payload !== "object") payload = {};
-      payload = Object.fromEntries(Object.entries(payload).filter(([, value]) => ["string", "number", "boolean"].includes(typeof value)).slice(0, 20));
-      return { tool: action.tool, title: action.title, payload };
+      payload = Object.fromEntries(Object.entries(payload)
+        .filter(([, value]) => typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)) || typeof value === "string")
+        .slice(0, 20)
+        .map(([key, value]) => [String(key).slice(0, 100), typeof value === "string" ? value.slice(0, 20_000) : value]));
+      return { tool: String(action?.tool || "").slice(0, 100), title: String(action?.title || "Untitled action").slice(0, 300), payload };
     })
   };
 }
 
-async function planWithOpenAI(prompt, apiKey, model) {
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model,
-      store: false,
-      instructions: instructions(prompt),
-      input: prompt,
-      text: { format: { type: "json_schema", name: "kstack_plan", strict: true, schema: PLAN_SCHEMA } }
-    })
-  });
-  if (!response.ok) {
-    throw new Error(`OpenAI request failed (${response.status}).`);
-  }
-  return normalizePlan(JSON.parse(extractOutputText(await response)));
-}
-
 async function planWithCodex(prompt, model) {
-  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "kstack-plan-"));
+  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), "cplug-plan-"));
   const outputPath = path.join(workDir, "plan.json");
   try {
     try {
@@ -108,21 +91,23 @@ function fallbackPlan(prompt) {
 }
 
 export class Planner {
-  constructor({ apiKey, model = "gpt-5.4-mini", codexEnabled = true, codexModel = "gpt-5.6-luna" } = {}) {
-    this.apiKey = apiKey;
-    this.model = model;
+  constructor({ provider = null, codexEnabled = true, codexModel = "gpt-5.6-luna" } = {}) {
+    this.provider = provider;
     this.codexModel = codexModel;
     this.codexAvailable = codexEnabled && spawnSync("which", ["codex"], { stdio: "ignore" }).status === 0;
   }
 
   status() {
-    if (this.apiKey) return { mode: "openai", label: this.model };
+    if (this.provider) return { mode: "api", label: this.provider.label() };
     if (this.codexAvailable) return { mode: "codex", label: `${this.codexModel} via Codex CLI` };
     return { mode: "fallback", label: "Deterministic fallback" };
   }
 
   async plan(prompt) {
-    if (this.apiKey) return { plan: await planWithOpenAI(prompt, this.apiKey, this.model), planner: this.model };
+    if (this.provider) {
+      const text = await this.provider.plan({ prompt, instructions: instructions(prompt), schema: PLAN_SCHEMA });
+      return { plan: normalizePlan(parsePlanText(text)), planner: this.provider.label() };
+    }
     if (this.codexAvailable) return { plan: await planWithCodex(prompt, this.codexModel), planner: `${this.codexModel} via Codex CLI` };
     return { plan: fallbackPlan(prompt), planner: "fallback" };
   }

@@ -1,11 +1,11 @@
 cff-version: 1.2.0
-message: "If you use K-Stack, please cite this software."
-title: "K-Stack"
+message: "If you use C-Plug, please cite this software."
+title: "C-Plug"
 type: software
 authors:
   - name: "Bobtoshi"
     email: "ellmusk@icloud.com"
-version: 0.2.0
+version: 0.3.0
 date-released: 2026-08-21
 license: AGPL-3.0-only
-repository-code: "https://github.com/Bobtoshi/k-stack"
+repository-code: "https://github.com/Bobtoshi/c-plug"

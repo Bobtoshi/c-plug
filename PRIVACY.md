@@ -1,18 +1,18 @@
 # Privacy
 
-K-Stack is local-first. Task prompts, action payloads, approval codes, connector results, messages, email addresses, calendar details, hostnames, shortcut names, and credentials are not community telemetry.
+C-Plug is local-first. Task prompts, action payloads, approval codes, connector results, messages, email addresses, calendar details, hostnames, shortcut names, and credentials are not community telemetry.
 
 ## Local data
 
-The local SQLite ledger contains task prompts and action details. Its directory is restricted to the local user, and task history is pruned after 30 days by default. Set `KSTACK_RETENTION_DAYS` to another value from 1 to 3650, or to 0 to disable automatic pruning.
+The local SQLite ledger contains task prompts and action details. Its directory is restricted to the local user, and task history is pruned after 30 days by default. Set `CPLUG_RETENTION_DAYS` to another value from 1 to 3650, or to 0 to disable automatic pruning.
 
-The iMessage bridge needs Full Disk Access to read Apple's local Messages database. Before pairing, it searches new one-to-one messages for the exact pairing command. After pairing, reads are restricted to the paired chat. Unrelated message bodies are not written to K-Stack's ledger or telemetry.
+The iMessage bridge needs Full Disk Access to read Apple's local Messages database. Before pairing, it searches new one-to-one messages for the exact pairing command. After pairing, reads are restricted to the paired chat. Unrelated message bodies are not written to C-Plug's ledger or telemetry.
 
-The optional WhatsApp channel uses Meta's official Cloud API. Meta processes the messages under the operator's Meta account terms. K-Stack accepts signed webhooks only, ignores senders other than the configured owner number, stores only a bounded set of processed message IDs for deduplication, and sends accepted command text into the same local task ledger as web and iMessage requests.
+The optional WhatsApp channel uses Meta's official Cloud API. Meta processes the messages under the operator's Meta account terms. C-Plug accepts signed webhooks only, ignores senders other than the configured owner number, stores only a bounded set of processed message IDs for deduplication, and sends accepted command text into the same local task ledger as web and iMessage requests.
 
 ## Optional community metrics
 
-Metrics are unavailable unless the operator configures `KSTACK_TELEMETRY_ENDPOINT` with an HTTPS URL. Even then, collection is off until the local user explicitly enables it in the control room. Disabling it deletes unsent counters and queued reports.
+Metrics are unavailable unless the operator configures `CPLUG_TELEMETRY_ENDPOINT` with an HTTPS URL. Even then, collection is off until the local user explicitly enables it in the control room. Disabling it deletes unsent counters and queued reports.
 
 Each report contains only:
 

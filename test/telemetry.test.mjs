@@ -7,7 +7,7 @@ import { Store } from "../src/store.mjs";
 import { Telemetry } from "../src/telemetry.mjs";
 
 function fixture(fetchImpl = async () => ({ ok: true })) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "kstack-telemetry-test-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cplug-telemetry-test-"));
   const store = new Store(path.join(directory, "test.sqlite"));
   const telemetry = new Telemetry({ store, endpoint: "https://metrics.example.test/v1/events", version: "0.1.0", fetchImpl, platform: "darwin", arch: "arm64", nodeVersion: "26.1.0" });
   return { directory, store, telemetry };
@@ -50,7 +50,7 @@ test("disabling telemetry purges unsent aggregates", (t) => {
 });
 
 test("telemetry requires an HTTPS endpoint", () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "kstack-telemetry-test-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cplug-telemetry-test-"));
   try {
     const store = new Store(path.join(directory, "test.sqlite"));
     const telemetry = new Telemetry({ store, endpoint: "http://metrics.example.test/events" });

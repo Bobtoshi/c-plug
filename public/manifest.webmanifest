@@ -1,6 +1,6 @@
 {
-  "name": "K-Stack",
-  "short_name": "K-Stack",
+  "name": "C-Plug",
+  "short_name": "C-Plug",
   "description": "Personal operations, under your control.",
   "start_url": "/",
   "display": "standalone",

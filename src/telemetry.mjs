@@ -16,7 +16,7 @@ const EVENTS = new Set([
 
 const DIMENSIONS = Object.freeze({
   source: new Set(["web", "imessage", "whatsapp", "unknown"]),
-  planner: new Set(["openai", "codex", "fallback", "unknown"]),
+  planner: new Set(["api", "codex", "fallback", "unknown"]),
   gate: new Set(["auto", "approval", "blocked", "unknown"]),
   outcome: new Set(["completed", "failed", "blocked", "rejected", "approved", "waiting", "unknown"]),
   tool: new Set([

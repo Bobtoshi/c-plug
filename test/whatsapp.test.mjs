@@ -11,7 +11,7 @@ const secret = "synthetic-app-secret";
 const sign = (body) => `sha256=${crypto.createHmac("sha256", secret).update(body).digest("hex")}`;
 
 function fixture(t) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "kstack-whatsapp-test-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cplug-whatsapp-test-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const store = new Store(path.join(directory, "state.sqlite"));
   const sent = [];
@@ -46,7 +46,7 @@ function fixture(t) {
   return { bridge, store, sent, calls };
 }
 
-function payload({ from = "15551234567", id = "wamid.synthetic.1", text = "KSTACK create a test event" } = {}) {
+function payload({ from = "15551234567", id = "wamid.synthetic.1", text = "CPLUG create a test event" } = {}) {
   return Buffer.from(JSON.stringify({ entry: [{ changes: [{ value: { messages: [{ id, from, type: "text", text: { body: text } }] } }] }] }));
 }
 
@@ -67,13 +67,13 @@ test("WhatsApp accepts only the configured owner and deduplicates message IDs", 
   assert.equal(f.calls.length, 1);
   assert.deepEqual(f.calls[0].options, { source: "whatsapp", sourceRef: "wamid.synthetic.1" });
   assert.equal(f.sent.length, 1);
-  assert.match(f.sent[0].body.text.body, /KSTACK APPROVE 123456/);
+  assert.match(f.sent[0].body.text.body, /CPLUG APPROVE 123456/);
   assert.equal(f.store.getSetting("whatsapp_seen_ids")[0], "wamid.synthetic.1");
 });
 
 test("WhatsApp approval replies use the same six-digit action gate", async (t) => {
   const f = fixture(t);
-  const body = payload({ id: "wamid.synthetic.2", text: "KSTACK APPROVE 654321" });
+  const body = payload({ id: "wamid.synthetic.2", text: "CPLUG APPROVE 654321" });
   assert.equal(f.bridge.acceptWebhook(body, sign(body)), 1);
   await f.bridge.idle();
   assert.equal(f.sent[0].body.text.body, "Approved action completed.");

@@ -25,7 +25,7 @@ export class MacMessagesSource {
       fs.accessSync(this.filename, fs.constants.R_OK);
       return { status: "available", detail: "Ready to pair" };
     } catch {
-      return { status: "permission_required", detail: "Grant Full Disk Access to K-Stack/Codex" };
+      return { status: "permission_required", detail: "Grant Full Disk Access to C-Plug/Codex" };
     }
   }
 
@@ -149,16 +149,16 @@ export class IMessageBridge {
     if (!pair) {
       const pairing = this.store.getSetting("imessage_pairing");
       if (!pairing || new Date(pairing.expiresAt) <= new Date()) return;
-      if (message.text.toUpperCase() !== `KSTACK PAIR ${pairing.code}`) return;
+      if (message.text.toUpperCase() !== `CPLUG PAIR ${pairing.code}`) return;
       this.store.setSetting("imessage_pair", { handle: message.handle, chatId: message.chatId, pairedAt: new Date().toISOString() });
       this.store.deleteSetting("imessage_pairing");
       this.store.addEvent({ kind: "completed", message: "iMessage command channel paired to one private conversation." });
-      await this.sender(message.handle, "K-Stack: paired. Send KSTACK followed by a request. Consequential actions will return a six-digit approval code.");
+      await this.sender(message.handle, "C-Plug: paired. Send CPLUG followed by a request. Consequential actions will return a six-digit approval code.");
       return;
     }
 
     if (message.handle !== pair.handle || message.chatId !== String(pair.chatId)) return;
-    const match = message.text.match(/^KSTACK\s+(.+)$/is);
+    const match = message.text.match(/^CPLUG\s+(.+)$/is);
     if (!match) return;
     const command = match[1].trim();
 
@@ -167,16 +167,16 @@ export class IMessageBridge {
       try {
         const state = await this.agent.decideByCode(decision[2], decision[1].toLowerCase() === "approve" ? "approve" : "reject");
         const action = state.actions.find((item) => item.approvalCode === decision[2]);
-        await this.sender(pair.handle, `K-Stack: ${action?.result?.message || "Decision recorded."}`);
+        await this.sender(pair.handle, `C-Plug: ${action?.result?.message || "Decision recorded."}`);
       } catch (error) {
-        await this.sender(pair.handle, `K-Stack: ${error.message}`);
+        await this.sender(pair.handle, `C-Plug: ${error.message}`);
       }
       return;
     }
 
     if (/^STATUS$/i.test(command)) {
       const pending = this.store.state().actions.filter((item) => item.status === "approval");
-      await this.sender(pair.handle, pending.length ? `K-Stack: ${pending.length} action${pending.length === 1 ? "" : "s"} waiting for approval.` : "K-Stack: online. Nothing is waiting for approval.");
+      await this.sender(pair.handle, pending.length ? `C-Plug: ${pending.length} action${pending.length === 1 ? "" : "s"} waiting for approval.` : "C-Plug: online. Nothing is waiting for approval.");
       return;
     }
 
@@ -185,8 +185,8 @@ export class IMessageBridge {
     const actions = task ? state.actions.filter((item) => item.taskId === task.id) : [];
     const pending = actions.filter((item) => item.status === "approval");
     const results = actions.filter((item) => item.result?.message).map((item) => item.result.message);
-    let reply = `K-Stack: ${task?.summary || "Request recorded."}`;
-    if (pending.length) reply += "\n" + pending.map((item) => `${item.title}\nReply KSTACK APPROVE ${item.approvalCode} or KSTACK REJECT ${item.approvalCode}`).join("\n\n");
+    let reply = `C-Plug: ${task?.summary || "Request recorded."}`;
+    if (pending.length) reply += "\n" + pending.map((item) => `${item.title}\nReply CPLUG APPROVE ${item.approvalCode} or CPLUG REJECT ${item.approvalCode}`).join("\n\n");
     else if (results.length) reply += `\n${results.join("\n")}`;
     await this.sender(pair.handle, reply.slice(0, 3_800));
   }

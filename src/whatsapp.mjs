@@ -116,7 +116,7 @@ export class WhatsAppBridge {
   }
 
   async #handle(message) {
-    const match = message.text.match(/^KSTACK\s+(.+)$/is);
+    const match = message.text.match(/^CPLUG\s+(.+)$/is);
     if (!match) return;
     const command = match[1].trim();
     const decision = command.match(/^(APPROVE|REJECT)\s+(\d{6})$/i);
@@ -144,7 +144,7 @@ export class WhatsAppBridge {
     const pending = actions.filter((item) => item.status === "approval");
     const results = actions.filter((item) => item.result?.message).map((item) => item.result.message);
     let reply = task?.summary || "Request recorded.";
-    if (pending.length) reply += "\n" + pending.map((item) => `${item.title}\nReply KSTACK APPROVE ${item.approvalCode} or KSTACK REJECT ${item.approvalCode}`).join("\n\n");
+    if (pending.length) reply += "\n" + pending.map((item) => `${item.title}\nReply CPLUG APPROVE ${item.approvalCode} or CPLUG REJECT ${item.approvalCode}`).join("\n\n");
     else if (results.length) reply += `\n${results.join("\n")}`;
     await this.#send(reply);
   }
