@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.applescript text eol=lf
+*.exp text eol=lf
+*.sh text eol=lf
+*.png binary
+*.sqlite binary
+*.zip binary
