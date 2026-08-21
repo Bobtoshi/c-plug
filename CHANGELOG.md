@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 — 2026-08-21
+
+- Add an authenticated loopback bridge to WINCH for cross-provider harness delegation from web, voice, iMessage, and WhatsApp.
+- Require a C-Plug approval before any intent is disclosed to a delegated harness.
+- Relay WINCH broker proposals back through message channels with separately namespaced `W123456` action approvals.
+- Support WINCH council requests that combine a primary harness, parallel independent advisers, and a separate verifier.
+
 ## 0.3.0 — 2026-08-21
 
 - Rename the product and repository to C-Plug.

@@ -12,6 +12,7 @@ test("external side effects require approval", () => {
   assert.equal(classifyAction({ tool: "email.send" }).level, "approval");
   assert.equal(classifyAction({ tool: "home.run_shortcut" }).level, "approval");
   assert.equal(classifyAction({ tool: "ssh.status" }).level, "approval");
+  assert.equal(classifyAction({ tool: "harness.delegate" }).level, "approval");
 });
 
 test("unknown tools fail closed", () => {

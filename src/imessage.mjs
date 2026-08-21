@@ -162,11 +162,12 @@ export class IMessageBridge {
     if (!match) return;
     const command = match[1].trim();
 
-    const decision = command.match(/^(APPROVE|REJECT)\s+(\d{6})$/i);
+    const decision = command.match(/^(APPROVE|REJECT)\s+(W?\d{6})$/i);
     if (decision) {
       try {
-        const state = await this.agent.decideByCode(decision[2], decision[1].toLowerCase() === "approve" ? "approve" : "reject");
-        const action = state.actions.find((item) => item.approvalCode === decision[2]);
+        const code = decision[2].toUpperCase();
+        const state = await this.agent.decideByCode(code, decision[1].toLowerCase() === "approve" ? "approve" : "reject");
+        const action = state.actions.find((item) => item.approvalCode === code);
         await this.sender(pair.handle, `C-Plug: ${action?.result?.message || "Decision recorded."}`);
       } catch (error) {
         await this.sender(pair.handle, `C-Plug: ${error.message}`);

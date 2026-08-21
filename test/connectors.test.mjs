@@ -40,3 +40,18 @@ test("SSH only accepts aliases found in the configured allowlist", async () => {
     (error) => error.code === "not_allowlisted"
   );
 });
+
+test("harness delegation uses only the configured WINCH client", async () => {
+  const calls = [];
+  const winchClient = {
+    status() { return { status: "available", detail: "test" }; },
+    async dispatch(intent, preferredHarness) {
+      calls.push({ intent, preferredHarness });
+      return { message: "Delegated safely.", connector: "winch", external: true };
+    }
+  };
+  const connectors = new ConnectorRegistry({ homeDir: "/path/that/does/not/exist", winchClient });
+  const result = await connectors.execute({ tool: "harness.delegate", title: "Delegate", payload: { intent: "Review this change", preferredHarness: "sentinel" } });
+  assert.deepEqual(calls, [{ intent: "Review this change", preferredHarness: "sentinel" }]);
+  assert.equal(result.connector, "winch");
+});

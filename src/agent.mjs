@@ -130,7 +130,12 @@ export class Agent {
   }
 
   async decideByCode(code, decision) {
-    const action = this.store.getActionByCode(String(code));
+    const normalized = String(code).toUpperCase();
+    if (/^W\d{6}$/.test(normalized)) {
+      const result = await this.connectors.decideHarnessApproval(normalized, decision);
+      return { ...this.store.state(), decisionResult: result, actions: [{ approvalCode: normalized, result }] };
+    }
+    const action = this.store.getActionByCode(normalized);
     if (!action) throw Object.assign(new Error("Approval code not found."), { statusCode: 404 });
     return this.decide(action.id, decision);
   }

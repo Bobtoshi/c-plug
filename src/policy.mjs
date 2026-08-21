@@ -7,6 +7,7 @@ const TOOL_POLICY = Object.freeze({
   "email.send": { level: "approval", label: "Send an email" },
   "home.run_shortcut": { level: "approval", label: "Run an allowlisted Apple Shortcut" },
   "ssh.status": { level: "approval", label: "Check an allowlisted SSH target" },
+  "harness.delegate": { level: "approval", label: "Delegate to the WINCH harness control plane" },
   "system.none": { level: "auto", label: "Answer without an action" }
 });
 

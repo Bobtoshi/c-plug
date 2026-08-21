@@ -119,12 +119,13 @@ export class WhatsAppBridge {
     const match = message.text.match(/^CPLUG\s+(.+)$/is);
     if (!match) return;
     const command = match[1].trim();
-    const decision = command.match(/^(APPROVE|REJECT)\s+(\d{6})$/i);
+    const decision = command.match(/^(APPROVE|REJECT)\s+(W?\d{6})$/i);
 
     if (decision) {
       try {
-        const state = await this.agent.decideByCode(decision[2], decision[1].toLowerCase() === "approve" ? "approve" : "reject");
-        const action = state.actions.find((item) => item.approvalCode === decision[2]);
+        const code = decision[2].toUpperCase();
+        const state = await this.agent.decideByCode(code, decision[1].toLowerCase() === "approve" ? "approve" : "reject");
+        const action = state.actions.find((item) => item.approvalCode === code);
         await this.#send(action?.result?.message || "Decision recorded.");
       } catch (error) {
         await this.#send(cleanText(error.message, 500) || "The approval could not be applied.");

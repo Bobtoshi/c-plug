@@ -65,8 +65,9 @@ function receipt(connector, message, extra = {}) {
 }
 
 export class ConnectorRegistry {
-  constructor({ homeDir = process.env.HOME, shortcutNames = process.env.CPLUG_SHORTCUTS || "", liveEnabled = false } = {}) {
+  constructor({ homeDir = process.env.HOME, shortcutNames = process.env.CPLUG_SHORTCUTS || "", liveEnabled = false, winchClient = null } = {}) {
     this.liveEnabled = liveEnabled;
+    this.winchClient = winchClient;
     this.shortcutNames = shortcutNames.split(",").map((item) => item.trim()).filter(Boolean);
     this.sshAliases = exactAliases(path.join(homeDir, ".ssh", "config"));
   }
@@ -82,7 +83,8 @@ export class ConnectorRegistry {
       { id: "calendar", name: "Calendar", status: liveStatus, detail: liveDetail || "Approval required to create" },
       { id: "email", name: "Mail", status: liveStatus, detail: liveDetail || "Drafts local; send requires approval" },
       { id: "shortcuts", name: "Apple Shortcuts", status: this.liveEnabled ? (this.shortcutNames.length ? "connected" : "setup_required") : "disabled", detail: liveDetail || (this.shortcutNames.length ? `${this.shortcutNames.length} allowlisted` : "Set CPLUG_SHORTCUTS") },
-      { id: "ssh", name: "SSH status", status: this.liveEnabled ? (this.sshAliases.length ? "connected" : "setup_required") : "disabled", detail: liveDetail || `${this.sshAliases.length} configured target${this.sshAliases.length === 1 ? "" : "s"}` }
+      { id: "ssh", name: "SSH status", status: this.liveEnabled ? (this.sshAliases.length ? "connected" : "setup_required") : "disabled", detail: liveDetail || `${this.sshAliases.length} configured target${this.sshAliases.length === 1 ? "" : "s"}` },
+      { id: "winch", name: "WINCH harness plane", ...(this.winchClient?.status() || { status: "disabled", detail: "Not configured" }) }
     ];
   }
 
@@ -111,6 +113,9 @@ export class ConnectorRegistry {
         return this.#shortcut(payload);
       case "ssh.status":
         return this.#sshStatus(payload);
+      case "harness.delegate":
+        if (!this.winchClient) throw new ConnectorError("WINCH delegation is not configured.", "winch_disabled");
+        return this.winchClient.dispatch(required(payload.intent, "Harness intent", 4_000), payload.preferredHarness || null);
       default:
         throw new ConnectorError(`No connector is registered for ${action.tool}.`, "unknown_tool");
     }
@@ -152,6 +157,11 @@ export class ConnectorRegistry {
     if (!this.sshAliases.includes(host)) throw new ConnectorError(`SSH host “${host}” is not configured and allowlisted.`, "not_allowlisted");
     const { stdout } = await runFile("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=10", host, "printf 'connected\\n'; uname -srm; uptime"], 20_000);
     return receipt("ssh", `Read-only status check completed for ${host}.`, { host, output: stdout.slice(0, 2_000) });
+  }
+
+  async decideHarnessApproval(code, decision) {
+    if (!this.winchClient) throw new ConnectorError("WINCH delegation is not configured.", "winch_disabled");
+    return this.winchClient.decide(code, decision);
   }
 }
 

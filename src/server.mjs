@@ -11,6 +11,7 @@ import { providerFromEnv } from "./providers.mjs";
 import { Store } from "./store.mjs";
 import { Telemetry } from "./telemetry.mjs";
 import { WhatsAppBridge } from "./whatsapp.mjs";
+import { WinchClient } from "./winch-client.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 loadEnv(path.join(root, ".env"));
@@ -25,7 +26,12 @@ const store = new Store(path.join(root, "data", "cplug.sqlite"));
 store.prune(Number(process.env.CPLUG_RETENTION_DAYS || 30));
 const packageInfo = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const planner = new Planner({ provider: providerFromEnv(process.env), codexEnabled: process.env.CPLUG_CODEX_PLANNER === "1", codexModel: process.env.CPLUG_CODEX_MODEL || "gpt-5.6-luna" });
-const connectors = new ConnectorRegistry({ liveEnabled: process.env.CPLUG_LIVE_CONNECTORS === "1" });
+const winchClient = new WinchClient({
+  enabled: process.env.CPLUG_WINCH_ENABLED === "1",
+  baseUrl: process.env.CPLUG_WINCH_URL || "http://127.0.0.1:4321",
+  token: process.env.CPLUG_WINCH_TOKEN || ""
+});
+const connectors = new ConnectorRegistry({ liveEnabled: process.env.CPLUG_LIVE_CONNECTORS === "1", winchClient });
 const telemetry = new Telemetry({ store, endpoint: process.env.CPLUG_TELEMETRY_ENDPOINT || "", version: packageInfo.version });
 const agent = new Agent({ store, planner, connectors, telemetry });
 const imessage = new IMessageBridge({ store, agent, enabled: process.env.CPLUG_IMESSAGE_ENABLED === "1" });
