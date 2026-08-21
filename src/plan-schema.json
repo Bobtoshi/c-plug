@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "summary": { "type": "string" },
+    "actions": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tool": {
+            "type": "string",
+            "enum": [
+              "research.collect",
+              "note.save",
+              "email.draft",
+              "calendar.list",
+              "calendar.create",
+              "email.send",
+              "home.run_shortcut",
+              "ssh.status",
+              "system.none"
+            ]
+          },
+          "title": { "type": "string" },
+          "payload_json": { "type": "string" }
+        },
+        "required": ["tool", "title", "payload_json"]
+      }
+    }
+  },
+  "required": ["summary", "actions"]
+}

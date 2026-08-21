@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.kstack.agent</string>
+  <key>ProgramArguments</key>
+  <array><string>__NODE__</string><string>__RUNTIME__/src/server.mjs</string></array>
+  <key>WorkingDirectory</key><string>__RUNTIME__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>__PATH__</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ProcessType</key><string>Interactive</string>
+  <key>StandardOutPath</key><string>__RUNTIME__/data/kstack.log</string>
+  <key>StandardErrorPath</key><string>__RUNTIME__/data/kstack.error.log</string>
+</dict>
+</plist>

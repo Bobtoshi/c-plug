@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use K-Stack, please cite this software."
+title: "K-Stack"
+type: software
+authors:
+  - name: "Bobtoshi"
+    email: "201082672+Bobtoshi@users.noreply.github.com"
+version: 0.2.0
+date-released: 2026-08-21
+license: AGPL-3.0-only
+repository-code: "https://github.com/Bobtoshi/k-stack"

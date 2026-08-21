@@ -1,0 +1,21 @@
+{
+  "name": "k-stack",
+  "version": "0.2.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": {
+    "name": "Bobtoshi",
+    "email": "201082672+Bobtoshi@users.noreply.github.com"
+  },
+  "type": "module",
+  "description": "A local-first personal operations agent with explicit approval boundaries.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "dev": "node --watch src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check:public": "node scripts/check-public-tree.mjs"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

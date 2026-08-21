@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta name="description" content="K-Stack personal operations agent">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <title>K-Stack — Control room</title>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <a class="brand" href="#workspace" aria-label="K-Stack home"><span>K</span><b>STACK</b></a>
+      <nav aria-label="Primary">
+        <a class="active" href="#workspace"><i>01</i>Control room</a>
+        <a href="#approvals"><i>02</i>Approvals <em id="approval-badge">0</em></a>
+        <a href="#ledger"><i>03</i>Ledger</a>
+        <a href="#connections"><i>04</i>Connections</a>
+      </nav>
+      <div class="rail-foot"><span class="pulse"></span><span id="rail-mode">Local mode</span></div>
+    </aside>
+
+    <main>
+      <header class="topline">
+        <div><span class="eyebrow">PERSONAL OPERATIONS / <span id="date-label"></span></span><h1>Control room</h1></div>
+        <button class="identity" type="button" aria-label="Local operator profile"><span>LO</span><b>Local owner</b></button>
+      </header>
+
+      <section class="composer-wrap" id="workspace">
+        <div class="mode-line"><span class="pulse"></span><span id="mode-label">Safe demo planner</span><small>Actions remain local until you approve them.</small></div>
+        <form id="composer">
+          <label for="prompt">What needs handling?</label>
+          <textarea id="prompt" name="prompt" rows="2" maxlength="4000" placeholder="Prepare Elden Ring on the living room setup…" required></textarea>
+          <div class="compose-actions">
+            <button id="voice" class="voice" type="button" aria-label="Dictate request"><span></span>Talk</button>
+            <button class="submit" type="submit"><span>Run request</span><b>↗</b></button>
+          </div>
+        </form>
+        <div class="suggestions" aria-label="Example requests">
+          <button type="button" data-prompt="Research cottages within a two-hour drive and create a comparison brief">Compare cottages</button>
+          <button type="button" data-prompt="Draft an email asking for available viewing times next week">Draft a viewing email</button>
+          <button type="button" data-prompt="Prepare Elden Ring on the living room gaming setup">Prepare game night</button>
+        </div>
+      </section>
+
+      <section class="split">
+        <div class="primary-column">
+          <section class="section" id="approvals">
+            <div class="section-head"><div><span class="eyebrow">DECISION GATE</span><h2>Needs your approval</h2></div><span id="approval-count">0 waiting</span></div>
+            <div id="approval-list" class="approval-list"></div>
+          </section>
+
+          <section class="section" id="ledger">
+            <div class="section-head"><div><span class="eyebrow">OBSERVABLE TRAJECTORY</span><h2>Action ledger</h2></div><span>Local record</span></div>
+            <ol id="event-list" class="event-list"></ol>
+          </section>
+        </div>
+
+        <aside class="context">
+          <section id="connections">
+            <div class="section-head"><div><span class="eyebrow">TRUST BOUNDARY</span><h2>Connections</h2></div></div>
+            <ul id="connector-list" class="connector-list"></ul>
+          </section>
+          <section id="imessage-setup" class="message-setup" hidden>
+            <span class="eyebrow">IMESSAGE COMMAND CHANNEL</span>
+            <h3 id="imessage-title">Finish setup</h3>
+            <p id="imessage-detail"></p>
+            <code id="pairing-command" hidden></code>
+            <div class="setup-actions">
+              <button id="copy-pairing" type="button" hidden>Copy command</button>
+              <button id="reset-pairing" type="button" hidden>Pair another chat</button>
+            </div>
+          </section>
+          <section class="message-setup privacy-setup">
+            <span class="eyebrow">OPTIONAL COMMUNITY INSIGHTS</span>
+            <h3>Anonymous aggregate metrics</h3>
+            <p id="telemetry-detail">Loading privacy status…</p>
+            <label class="privacy-toggle" for="telemetry-toggle">
+              <input id="telemetry-toggle" type="checkbox">
+              <span>Share aggregate usage counters</span>
+            </label>
+            <p class="privacy-rule">Never includes prompts, messages, recipients, calendar data, hostnames, credentials or stable installation IDs.</p>
+          </section>
+          <section class="principle">
+            <span class="eyebrow">OPERATING PRINCIPLE</span>
+            <blockquote>Fast on preparation.<br>Deliberate on consequence.</blockquote>
+            <p>K-Stack can plan freely. Contacting people, changing calendars, and controlling devices always stops at you.</p>
+            <p class="hard-rule">Mail links and attachments are never opened.</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

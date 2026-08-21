@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a reproducible non-security problem using synthetic data.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include real prompts, messages, email addresses, calendar data, credentials, database files, pairing codes, or screenshots containing personal information. Report vulnerabilities privately using SECURITY.md."
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Use synthetic placeholders for all data.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest safe set of steps.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: K-Stack version
+    validations:
+      required: true

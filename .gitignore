@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.DS_Store
+.playwright-cli/
+coverage/
+data/
+node_modules/
+output/
+outputs/
+work/
+*.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.zip
+npm-debug.log*
