@@ -7,6 +7,7 @@ import { ConnectorRegistry } from "./connectors.mjs";
 import { loadEnv } from "./env.mjs";
 import { IMessageBridge } from "./imessage.mjs";
 import { Planner } from "./planner.mjs";
+import { providerFromEnv } from "./providers.mjs";
 import { Store } from "./store.mjs";
 import { Telemetry } from "./telemetry.mjs";
 import { WhatsAppBridge } from "./whatsapp.mjs";
@@ -15,29 +16,29 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 loadEnv(path.join(root, ".env"));
 
 const publicDir = path.join(root, "public");
-const port = Number(process.env.KSTACK_PORT || 4317);
-const host = process.env.KSTACK_HOST || "127.0.0.1";
+const port = Number(process.env.CPLUG_PORT || 4317);
+const host = process.env.CPLUG_HOST || "127.0.0.1";
 const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
-if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error("KSTACK_PORT must be a valid TCP port.");
-if (!loopbackHosts.has(host.toLowerCase())) throw new Error("K-Stack only binds to loopback. Remote access requires a separately authenticated proxy.");
-const store = new Store(path.join(root, "data", "kstack.sqlite"));
-store.prune(Number(process.env.KSTACK_RETENTION_DAYS || 30));
+if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error("CPLUG_PORT must be a valid TCP port.");
+if (!loopbackHosts.has(host.toLowerCase())) throw new Error("C-Plug only binds to loopback. Remote access requires a separately authenticated proxy.");
+const store = new Store(path.join(root, "data", "cplug.sqlite"));
+store.prune(Number(process.env.CPLUG_RETENTION_DAYS || 30));
 const packageInfo = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-const planner = new Planner({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL || "gpt-5.4-mini", codexEnabled: process.env.KSTACK_CODEX_PLANNER === "1", codexModel: process.env.KSTACK_CODEX_MODEL || "gpt-5.6-luna" });
-const connectors = new ConnectorRegistry({ liveEnabled: process.env.KSTACK_LIVE_CONNECTORS === "1" });
-const telemetry = new Telemetry({ store, endpoint: process.env.KSTACK_TELEMETRY_ENDPOINT || "", version: packageInfo.version });
+const planner = new Planner({ provider: providerFromEnv(process.env), codexEnabled: process.env.CPLUG_CODEX_PLANNER === "1", codexModel: process.env.CPLUG_CODEX_MODEL || "gpt-5.6-luna" });
+const connectors = new ConnectorRegistry({ liveEnabled: process.env.CPLUG_LIVE_CONNECTORS === "1" });
+const telemetry = new Telemetry({ store, endpoint: process.env.CPLUG_TELEMETRY_ENDPOINT || "", version: packageInfo.version });
 const agent = new Agent({ store, planner, connectors, telemetry });
-const imessage = new IMessageBridge({ store, agent, enabled: process.env.KSTACK_IMESSAGE_ENABLED === "1" });
+const imessage = new IMessageBridge({ store, agent, enabled: process.env.CPLUG_IMESSAGE_ENABLED === "1" });
 const whatsapp = new WhatsAppBridge({
   store,
   agent,
-  enabled: process.env.KSTACK_WHATSAPP_ENABLED === "1",
-  verifyToken: process.env.KSTACK_WHATSAPP_VERIFY_TOKEN,
-  appSecret: process.env.KSTACK_WHATSAPP_APP_SECRET,
-  accessToken: process.env.KSTACK_WHATSAPP_ACCESS_TOKEN,
-  phoneNumberId: process.env.KSTACK_WHATSAPP_PHONE_NUMBER_ID,
-  ownerNumber: process.env.KSTACK_WHATSAPP_OWNER_NUMBER,
-  apiVersion: process.env.KSTACK_WHATSAPP_API_VERSION
+  enabled: process.env.CPLUG_WHATSAPP_ENABLED === "1",
+  verifyToken: process.env.CPLUG_WHATSAPP_VERIFY_TOKEN,
+  appSecret: process.env.CPLUG_WHATSAPP_APP_SECRET,
+  accessToken: process.env.CPLUG_WHATSAPP_ACCESS_TOKEN,
+  phoneNumberId: process.env.CPLUG_WHATSAPP_PHONE_NUMBER_ID,
+  ownerNumber: process.env.CPLUG_WHATSAPP_OWNER_NUMBER,
+  apiVersion: process.env.CPLUG_WHATSAPP_API_VERSION
 });
 
 const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml" };
@@ -49,7 +50,7 @@ const securityHeaders = Object.freeze({
   "cross-origin-resource-policy": "same-origin",
   "cross-origin-opener-policy": "same-origin",
   "permissions-policy": "camera=(), geolocation=(), microphone=(self)",
-  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types kstack"
+  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types cplug"
 });
 
 function json(res, status, responseBody) {
@@ -66,7 +67,7 @@ function assertLocalRequest(req) {
   if (!loopbackHosts.has(hostname) || requestPort !== port) throw Object.assign(new Error("Host is not allowed."), { statusCode: 403 });
 
   if (req.method === "POST") {
-    if (req.headers["x-kstack-request"] !== "1") throw Object.assign(new Error("Missing local request header."), { statusCode: 403 });
+    if (req.headers["x-cplug-request"] !== "1") throw Object.assign(new Error("Missing local request header."), { statusCode: 403 });
     if (!String(req.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
       throw Object.assign(new Error("JSON content type required."), { statusCode: 415 });
     }
@@ -185,7 +186,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname.startsWith("/api/")) await handleApi(req, res, url);
     else serveStatic(req, res, url.pathname);
   } catch (error) {
-    if (!error.statusCode) console.error("K-Stack request failed with an internal error.");
+    if (!error.statusCode) console.error("C-Plug request failed with an internal error.");
     json(res, error.statusCode || 500, { error: error.statusCode ? error.message : "Internal server error." });
   }
 });
@@ -200,7 +201,7 @@ server.on("clientError", (_error, socket) => {
 server.listen(port, host, () => {
   const plannerStatus = planner.status();
   const messageStatus = imessage.status();
-  console.log(`K-Stack is running at http://${host}:${port}`);
+  console.log(`C-Plug is running at http://${host}:${port}`);
   console.log(`Planner: ${plannerStatus.label}`);
   console.log(`iMessage: ${messageStatus.status}`);
   console.log(`WhatsApp: ${whatsapp.status().status}`);

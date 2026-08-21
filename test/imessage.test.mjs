@@ -14,7 +14,7 @@ class FakeSource {
 }
 
 function fixture() {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "kstack-imessage-test-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cplug-imessage-test-"));
   const store = new Store(path.join(directory, "test.sqlite"));
   const source = new FakeSource();
   const sent = [];
@@ -37,7 +37,7 @@ test("iMessage pairing binds one handle and chat", async (t) => {
   t.after(() => fs.rmSync(f.directory, { recursive: true, force: true }));
   await f.bridge.processOnce();
   const code = f.store.getSetting("imessage_pairing").code;
-  f.source.rows.push({ rowId: 1, text: `KSTACK PAIR ${code}`, handle: "owner@example.test", chatId: "7", participantCount: 1, fromMe: false });
+  f.source.rows.push({ rowId: 1, text: `CPLUG PAIR ${code}`, handle: "owner@example.test", chatId: "7", participantCount: 1, fromMe: false });
   await f.bridge.processOnce();
   assert.equal(f.store.getSetting("imessage_pair").handle, "owner@example.test");
   assert.match(f.sent[0].message, /paired/i);
@@ -48,7 +48,7 @@ test("unpaired or unrelated chats cannot issue commands", async (t) => {
   t.after(() => fs.rmSync(f.directory, { recursive: true, force: true }));
   f.store.setSetting("imessage_cursor", 0);
   f.store.setSetting("imessage_pair", { handle: "owner@example.test", chatId: "7" });
-  f.source.rows.push({ rowId: 1, text: "KSTACK STATUS", handle: "other@example.test", chatId: "8", participantCount: 1, fromMe: false });
+  f.source.rows.push({ rowId: 1, text: "CPLUG STATUS", handle: "other@example.test", chatId: "8", participantCount: 1, fromMe: false });
   await f.bridge.processOnce();
   assert.equal(f.sent.length, 0);
 });
@@ -58,7 +58,7 @@ test("approval commands are routed by six-digit code", async (t) => {
   t.after(() => fs.rmSync(f.directory, { recursive: true, force: true }));
   f.store.setSetting("imessage_cursor", 0);
   f.store.setSetting("imessage_pair", { handle: "owner@example.test", chatId: "7" });
-  f.source.rows.push({ rowId: 1, text: "KSTACK APPROVE 482193", handle: "owner@example.test", chatId: "7", participantCount: 1, fromMe: true });
+  f.source.rows.push({ rowId: 1, text: "CPLUG APPROVE 482193", handle: "owner@example.test", chatId: "7", participantCount: 1, fromMe: true });
   await f.bridge.processOnce();
   assert.deepEqual(f.agent.decisions, [{ code: "482193", decision: "approve" }]);
   assert.match(f.sent[0].message, /completed/i);

@@ -6,7 +6,7 @@ import path from "node:path";
 import { Store } from "../src/store.mjs";
 
 function fixture() {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "kstack-store-test-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cplug-store-test-"));
   const dataDirectory = path.join(directory, "private-data");
   const filename = path.join(dataDirectory, "test.sqlite");
   const store = new Store(filename);

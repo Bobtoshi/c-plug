@@ -1,6 +1,6 @@
 # Security policy
 
-K-Stack can operate Mail, Calendar, Messages, Shortcuts, and allowlisted SSH targets using the permissions of the local macOS account. Treat every connector as security-sensitive.
+C-Plug can operate Mail, Calendar, Messages, Shortcuts, and allowlisted SSH targets using the permissions of the local macOS account. Treat every connector as security-sensitive.
 
 ## Reporting a vulnerability
 
@@ -17,9 +17,10 @@ Only the latest release on the default branch receives security fixes during the
 - The HTTP service is loopback-only and rejects non-loopback Host and cross-site mutation requests.
 - Unknown tools fail closed. External changes require an explicit approval immediately before execution.
 - Email bodies, email links, and email attachments are outside the supported trust boundary.
-- The iMessage connector is macOS-only, reads Apple's local Messages database with user-granted Full Disk Access, accepts one paired one-to-one chat, and requires the `KSTACK` prefix.
-- The WhatsApp connector uses Meta's official Cloud API, verifies every webhook with the configured app secret, accepts one exact owner number, deduplicates message IDs, and requires the `KSTACK` prefix. A reverse proxy should expose only `/api/whatsapp/webhook` over HTTPS and rewrite the upstream Host header.
+- The iMessage connector is macOS-only, reads Apple's local Messages database with user-granted Full Disk Access, accepts one paired one-to-one chat, and requires the `CPLUG` prefix.
+- The WhatsApp connector uses Meta's official Cloud API, verifies every webhook with the configured app secret, accepts one exact owner number, deduplicates message IDs, and requires the `CPLUG` prefix. A reverse proxy should expose only `/api/whatsapp/webhook` over HTTPS and rewrite the upstream Host header.
 - Credentials remain in the operating system, local configuration, or environment. They must never be copied into issues, telemetry, fixtures, or the SQLite ledger.
+- API providers are selected only from local configuration. Incoming prompts cannot choose an endpoint, model, key name, or authentication scheme. Custom endpoints require HTTPS except for explicit loopback local-model URLs, redirects are rejected, and requests time out.
 - SSH is limited to exact non-wildcard aliases already present in the user's SSH configuration and executes one fixed read-only status command.
 - Community telemetry is optional, aggregate-only, and disabled until explicit consent. See [PRIVACY.md](PRIVACY.md).
 

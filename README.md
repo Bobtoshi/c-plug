@@ -1,6 +1,6 @@
-# K-Stack
+# C-Plug
 
-K-Stack is a local-first personal operations agent for macOS. It turns natural-language requests into typed, bounded actions; prepares low-risk work locally; and pauses consequential actions for explicit approval.
+C-Plug is a universal, local-first personal AI operator for macOS. It connects the user's chosen AI provider to typed, bounded actions; accepts requests from its local control room, iMessage, or WhatsApp; prepares low-risk work locally; and pauses consequential actions for explicit approval.
 
 This is early community software, not a hosted service. Start in safe local mode, inspect the proposed actions, and enable only the connectors you understand.
 
@@ -12,8 +12,8 @@ The default checkout has no live connectors, iMessage bridge, WhatsApp bridge, e
 - Calendar creation, email sending, Shortcuts, and SSH status checks require approval.
 - Mail bodies cannot be read. Mail links and attachments cannot be opened, fetched, previewed, followed, or downloaded.
 - SSH accepts only exact non-wildcard aliases already present in `~/.ssh/config` and runs one fixed read-only status command.
-- Messages commands require one paired one-to-one chat and the `KSTACK` prefix.
-- WhatsApp commands require Meta's signed Cloud API webhook, one exact owner number, and the `KSTACK` prefix.
+- Messages commands require one paired one-to-one chat and the `CPLUG` prefix.
+- WhatsApp commands require Meta's signed Cloud API webhook, one exact owner number, and the `CPLUG` prefix.
 - Local task history is pruned after 30 days by default.
 - Optional community metrics are aggregate-only, off by default, and exclude user content and stable installation IDs.
 
@@ -24,6 +24,7 @@ Read [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md) before enabling int
 Requires macOS and Node.js 22.5 or newer.
 
 ```bash
+npm run setup
 npm start
 ```
 
@@ -38,40 +39,53 @@ npm run check:public
 
 ## Enable selected capabilities
 
-Copy `.env.example` to `.env`, review every setting, and opt in deliberately:
+`npm run setup` creates an owner-only `.env` file. Review every setting and opt in deliberately:
 
 ```dotenv
-KSTACK_CODEX_PLANNER=1
-KSTACK_LIVE_CONNECTORS=1
-KSTACK_IMESSAGE_ENABLED=1
-KSTACK_SHORTCUTS=Prepare Office,Prepare Gaming
+CPLUG_AI_PROVIDER=anthropic
+CPLUG_AI_MODEL=claude-your-model
+CPLUG_AI_API_KEY=your-local-key
+CPLUG_LIVE_CONNECTORS=1
+CPLUG_IMESSAGE_ENABLED=1
+CPLUG_SHORTCUTS=Prepare Office,Prepare Gaming
 ```
 
-`KSTACK_CODEX_PLANNER=1` uses an already-authenticated Codex CLI as an ephemeral, schema-constrained planner in an empty temporary directory with a read-only sandbox. Alternatively, set `OPENAI_API_KEY`; the key remains server-side and requests use `store: false`.
+Paste any supported service key into `CPLUG_AI_API_KEY`. Alternatively, `CPLUG_AI_API_KEY_ENV` can name any uppercase environment variable such as `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY`. The key remains server-side and is never returned to the browser, message channels, ledger, or telemetry.
 
-`KSTACK_LIVE_CONNECTORS=1` enables the Calendar, Mail, Shortcuts, and SSH adapters as a group. Action-level approval rules still apply. Review `src/policy.mjs` and `src/connectors.mjs` first.
+Supported provider shapes:
+
+| `CPLUG_AI_PROVIDER` | Typical services | Endpoint behavior |
+| --- | --- | --- |
+| `openai-responses` | OpenAI Responses API | Defaults to OpenAI's Responses endpoint and requests strict JSON schema output. |
+| `openai-compatible` | OpenAI Chat Completions, OpenRouter, Groq, Together, Ollama and compatible servers | Set `CPLUG_AI_BASE_URL` to the exact chat-completions endpoint. Loopback HTTP is allowed for local models; every other endpoint requires HTTPS. |
+| `anthropic` | Anthropic Messages API | Defaults to Anthropic's Messages endpoint and uses the configured key as `x-api-key`. |
+| `gemini` | Google Gemini generateContent | Builds the official model endpoint and uses the configured key as `x-goog-api-key`. |
+
+Set `CPLUG_CODEX_PLANNER=1` instead to use an already-authenticated Codex CLI as an ephemeral, schema-constrained planner in an empty temporary directory with a read-only sandbox. If neither mode is configured, C-Plug uses its deterministic fallback.
+
+`CPLUG_LIVE_CONNECTORS=1` enables the Calendar, Mail, Shortcuts, and SSH adapters as a group. Action-level approval rules still apply. Review `src/policy.mjs` and `src/connectors.mjs` first.
 
 ## Pair iMessage
 
-1. Set `KSTACK_IMESSAGE_ENABLED=1` and restart K-Stack.
-2. Open the control room. If access is required, grant Full Disk Access to K-Stack and the exact Node executable running it.
-3. Send the displayed `KSTACK PAIR 123456` command from the one-to-one conversation you want to authorize.
-4. Send `KSTACK` followed by a request.
-5. For a consequential action, reply with the exact `KSTACK APPROVE 123456` or `KSTACK REJECT 123456` command.
+1. Set `CPLUG_IMESSAGE_ENABLED=1` and restart C-Plug.
+2. Open the control room. If access is required, grant Full Disk Access to C-Plug and the exact Node executable running it.
+3. Send the displayed `CPLUG PAIR 123456` command from the one-to-one conversation you want to authorize.
+4. Send `CPLUG` followed by a request.
+5. For a consequential action, reply with the exact `CPLUG APPROVE 123456` or `CPLUG REJECT 123456` command.
 
-Before pairing, K-Stack searches only new one-to-one Messages rows for the pairing command. After pairing, database reads are restricted to that chat. Unrelated message bodies are not stored in K-Stack or included in telemetry.
+Before pairing, C-Plug searches only new one-to-one Messages rows for the pairing command. After pairing, database reads are restricted to that chat. Unrelated message bodies are not stored in C-Plug or included in telemetry.
 
 The Messages database is an Apple implementation detail and may change between macOS releases. This connector is distributed directly and is not represented as a public Apple messaging API.
 
 ## Connect WhatsApp
 
-K-Stack supports the official WhatsApp Cloud API. It does not automate WhatsApp Web or scrape private chats.
+C-Plug supports the official WhatsApp Cloud API. It does not automate WhatsApp Web or scrape private chats.
 
 1. Create a Meta app with WhatsApp Cloud API access and configure a dedicated business phone number.
-2. Set all `KSTACK_WHATSAPP_*` values from `.env.example`, including one exact owner number and a currently supported Graph API version.
-3. Expose only `/api/whatsapp/webhook` through an HTTPS reverse proxy or tunnel. Keep every other K-Stack route loopback-only and rewrite the upstream Host header to `127.0.0.1:4317`.
-4. Register the HTTPS webhook URL and verify token with Meta, subscribe to message events, and restart K-Stack.
-5. Send `KSTACK STATUS` or `KSTACK` followed by a request from the configured owner number.
+2. Set all `CPLUG_WHATSAPP_*` values from `.env.example`, including one exact owner number and a currently supported Graph API version.
+3. Expose only `/api/whatsapp/webhook` through an HTTPS reverse proxy or tunnel. Keep every other C-Plug route loopback-only and rewrite the upstream Host header to `127.0.0.1:4317`.
+4. Register the HTTPS webhook URL and verify token with Meta, subscribe to message events, and restart C-Plug.
+5. Send `CPLUG STATUS` or `CPLUG` followed by a request from the configured owner number.
 
 Every POST webhook is authenticated with `X-Hub-Signature-256` before its JSON is parsed. Other senders and duplicate message IDs are ignored. Consequential actions return the same six-digit approval flow as iMessage.
 
@@ -84,17 +98,17 @@ chmod +x scripts/install-launch-agent.sh
 ./scripts/install-launch-agent.sh
 ```
 
-The installer copies a private runtime to `~/Library/Application Support/KStack`, preserves local data across updates, restricts the runtime and database directories to the current user, and registers `com.kstack.agent` as a LaunchAgent.
+The installer copies a private runtime to `~/Library/Application Support/CPlug`, preserves local data across updates, restricts the runtime and database directories to the current user, and registers `com.cplug.agent` as a LaunchAgent.
 
 ## Optional community insights
 
-Maintainers can configure an HTTPS collector with `KSTACK_TELEMETRY_ENDPOINT`. That only makes the consent control available; nothing is collected until the local user enables it in the control room.
+Maintainers can configure an HTTPS collector with `CPLUG_TELEMETRY_ENDPOINT`. That only makes the consent control available; nothing is collected until the local user enables it in the control room.
 
 Useful aggregate counters include:
 
 - which bounded tool types are proposed;
 - daily active-install estimates using a daily rotating pseudonym;
-- web versus iMessage request channel;
+- web, iMessage, or WhatsApp request channel;
 - planner mode and fallback frequency;
 - approval versus rejection rates;
 - connector completion and failure rates.
@@ -104,7 +118,7 @@ No prompts, messages, recipients, calendar content, URLs, hostnames, credentials
 ## What works
 
 - Phone-first local control room and browser voice dictation
-- Deterministic fallback, authenticated Codex CLI, or OpenAI Responses API planning
+- Deterministic fallback, authenticated Codex CLI, or universal API-provider planning
 - Server-enforced approval gates and SQLite action receipts
 - Paired iMessage and owner-allowlisted WhatsApp commands with six-digit approvals
 - Calendar reads and approved event creation
@@ -115,7 +129,7 @@ No prompts, messages, recipients, calendar content, URLs, hostnames, credentials
 
 Live research collection is intentionally not connected yet.
 
-K-Stack is not an unrestricted shell and cannot literally do everything. It can perform any operation implemented as a typed connector that satisfies the connector contract below. Apple Shortcuts provide a practical extension path for personal workflows without granting incoming messages arbitrary command execution.
+C-Plug is not an unrestricted shell and cannot literally do everything. It can perform any operation implemented as a typed connector that satisfies the connector contract below. Apple Shortcuts provide a practical extension path for personal workflows without granting incoming messages arbitrary command execution.
 
 ## Connector contract
 
@@ -130,6 +144,6 @@ Every new connector must provide:
 
 ## Open-source releases
 
-K-Stack is licensed under the GNU Affero General Public License v3.0 only. See [LICENSE](LICENSE).
+C-Plug is licensed under the GNU Affero General Public License v3.0 only. See [LICENSE](LICENSE).
 
 Never publish a live runtime folder. Build releases from a fresh checkout and follow [the release checklist](docs/OPEN_SOURCE_RELEASE.md). Security reports belong in GitHub private vulnerability reporting, not public issues.

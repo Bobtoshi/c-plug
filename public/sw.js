@@ -1,4 +1,4 @@
-const CACHE = "kstack-shell-v4";
+const CACHE = "cplug-shell-v4";
 const ASSETS = ["/", "/styles.css", "/app.js", "/manifest.webmanifest"];
 self.addEventListener("install", (event) => event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS))));
 self.addEventListener("activate", (event) => event.waitUntil(

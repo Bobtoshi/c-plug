@@ -1,7 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 const state = { tasks: [], actions: [], events: [], meta: { connectors: [] } };
 const labels = { request: "Request", plan: "Plan", approval: "Approval required", completed: "Completed", rejected: "Rejected", blocked: "Blocked", warning: "Fallback" };
-const mutationHeaders = Object.freeze({ "content-type": "application/json", "x-kstack-request": "1" });
+const mutationHeaders = Object.freeze({ "content-type": "application/json", "x-cplug-request": "1" });
 
 function node(tag, { className, text, dataset } = {}) {
   const element = document.createElement(tag);
@@ -102,7 +102,7 @@ function render() {
   renderConnectors();
   renderTelemetry();
 
-  const plannerLabels = { openai: `${state.meta.model} planner`, codex: "Codex planner · read-only", fallback: "Deterministic fallback" };
+  const plannerLabels = { api: `${state.meta.model} planner`, codex: "Codex planner · read-only", fallback: "Deterministic fallback" };
   $("#mode-label").textContent = plannerLabels[state.meta.mode] || state.meta.model || "Planner ready";
   $("#rail-mode").textContent = state.meta.mode === "fallback" ? "Limited planner" : "Planner online";
 
@@ -112,24 +112,24 @@ function render() {
   $("#pairing-command").hidden = !message.pairingCode;
   $("#copy-pairing").hidden = !message.pairingCode;
   $("#reset-pairing").hidden = !message.paired;
-  if (message.pairingCode) $("#pairing-command").textContent = `KSTACK PAIR ${message.pairingCode}`;
+  if (message.pairingCode) $("#pairing-command").textContent = `CPLUG PAIR ${message.pairingCode}`;
   else $("#pairing-command").textContent = "";
   if (message.status === "permission_required") {
     $("#imessage-title").textContent = "Allow message access";
-    $("#imessage-detail").textContent = "Open System Settings → Privacy & Security → Full Disk Access, enable K-Stack and the Node executable that runs it, then restart K-Stack. After that, send the pairing command from the one iMessage chat you want to authorize.";
+    $("#imessage-detail").textContent = "Open System Settings → Privacy & Security → Full Disk Access, enable C-Plug and the Node executable that runs it, then restart C-Plug. After that, send the pairing command from the one iMessage chat you want to authorize.";
   } else if (message.paired) {
     $("#imessage-title").textContent = "Private chat paired";
-    $("#imessage-detail").textContent = "Only the paired one-to-one chat and messages beginning with KSTACK are accepted.";
+    $("#imessage-detail").textContent = "Only the paired one-to-one chat and messages beginning with CPLUG are accepted.";
   } else {
     $("#imessage-title").textContent = "Pair your phone";
-    $("#imessage-detail").textContent = "Send this exact command from the one-to-one iMessage conversation you want K-Stack to trust.";
+    $("#imessage-detail").textContent = "Send this exact command from the one-to-one iMessage conversation you want C-Plug to trust.";
   }
 }
 
 async function refresh() {
   const response = await fetch("/api/state");
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Could not load K-Stack state.");
+  if (!response.ok) throw new Error(data.error || "Could not load C-Plug state.");
   Object.assign(state, data);
   render();
 }
