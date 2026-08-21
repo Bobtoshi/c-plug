@@ -22,6 +22,7 @@ Only the latest release on the default branch receives security fixes during the
 - Credentials remain in the operating system, local configuration, or environment. They must never be copied into issues, telemetry, fixtures, or the SQLite ledger.
 - API providers are selected only from local configuration. Incoming prompts cannot choose an endpoint, model, key name, or authentication scheme. Custom endpoints require HTTPS except for explicit loopback local-model URLs, redirects are rejected, and requests time out.
 - SSH is limited to exact non-wildcard aliases already present in the user's SSH configuration and executes one fixed read-only status command.
+- The optional WINCH bridge accepts only an uncredentialed loopback HTTP origin and authenticates every request with a shared secret of at least 32 characters. Delegation requires C-Plug approval; proposed WINCH actions remain separately approved and use a distinct `W` code namespace.
 - Community telemetry is optional, aggregate-only, and disabled until explicit consent. See [PRIVACY.md](PRIVACY.md).
 
 ## Maintainer release requirements

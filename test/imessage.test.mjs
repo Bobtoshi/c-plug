@@ -63,3 +63,13 @@ test("approval commands are routed by six-digit code", async (t) => {
   assert.deepEqual(f.agent.decisions, [{ code: "482193", decision: "approve" }]);
   assert.match(f.sent[0].message, /completed/i);
 });
+
+test("WINCH action approvals keep their W namespace", async (t) => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.directory, { recursive: true, force: true }));
+  f.store.setSetting("imessage_cursor", 0);
+  f.store.setSetting("imessage_pair", { handle: "owner@example.test", chatId: "7" });
+  f.source.rows.push({ rowId: 1, text: "CPLUG APPROVE W482193", handle: "owner@example.test", chatId: "7", participantCount: 1, fromMe: true });
+  await f.bridge.processOnce();
+  assert.deepEqual(f.agent.decisions, [{ code: "W482193", decision: "approve" }]);
+});

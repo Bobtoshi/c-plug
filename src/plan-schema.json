@@ -21,6 +21,7 @@
               "email.send",
               "home.run_shortcut",
               "ssh.status",
+              "harness.delegate",
               "system.none"
             ]
           },

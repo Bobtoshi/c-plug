@@ -26,6 +26,7 @@ function instructions(prompt) {
     "calendar.create={title,start,end,notes?,calendar?}; start/end must be ISO 8601.",
     "calendar.list={days}; email.draft/email.send={to,subject,body}; note.save={text}.",
     "research.collect={query}; home.run_shortcut={shortcut}; ssh.status={host}.",
+    "harness.delegate={intent,preferredHarness?}; use it when the user explicitly asks another AI, model, coding agent, or harness to do or verify work.",
     `Current local time: ${now.toISOString()}; timezone: ${timezone}.`,
     `User request: ${prompt}`
   ].join("\n");
@@ -80,6 +81,9 @@ function fallbackPlan(prompt) {
   }
   if (/send|email/.test(lower)) {
     return { summary: "I need the recipient and message details.", actions: [{ tool: "system.none", title: "Ask for the missing email details", payload: { message: "Who is the email to, what is the subject, and what should it say?" } }] };
+  }
+  if (/\b(delegate|harness|codex|claude|coding agent|another ai|second opinion|committee|council|consensus|multiple ais?|all my ais?)\b/.test(lower)) {
+    return { summary: "Delegate this through the guarded multi-harness control plane.", actions: [{ tool: "harness.delegate", title: "Dispatch to WINCH", payload: { intent: prompt } }] };
   }
   if (/research|find|compare|look up|search/.test(lower)) {
     return { summary: "Prepare a research request.", actions: [{ tool: "research.collect", title: "Create research brief", payload: { query: prompt } }] };

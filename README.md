@@ -2,6 +2,8 @@
 
 C-Plug is a universal, local-first personal AI operator for macOS. It connects the user's chosen AI provider to typed, bounded actions; accepts requests from its local control room, iMessage, or WhatsApp; prepares low-risk work locally; and pauses consequential actions for explicit approval.
 
+When paired with [WINCH](https://github.com/Bobtoshi/winch), C-Plug can also delegate work across multiple AI harnesses, preserve fallbacks, request an independent verification pass, and return separately namespaced action approvals to the same message conversation.
+
 This is early community software, not a hosted service. Start in safe local mode, inspect the proposed actions, and enable only the connectors you understand.
 
 ## Safety model
@@ -65,6 +67,28 @@ Set `CPLUG_CODEX_PLANNER=1` instead to use an already-authenticated Codex CLI as
 
 `CPLUG_LIVE_CONNECTORS=1` enables the Calendar, Mail, Shortcuts, and SSH adapters as a group. Action-level approval rules still apply. Review `src/policy.mjs` and `src/connectors.mjs` first.
 
+## Connect the WINCH harness plane
+
+This optional bridge combines C-Plug's iMessage, WhatsApp, voice, and personal-operator surface with WINCH's cross-harness routing and provider-independent action broker.
+
+1. Run WINCH on its default loopback address.
+2. Generate a shared secret with `openssl rand -hex 32`.
+3. Put that value in WINCH's private `.env` as `WINCH_BRIDGE_TOKEN`.
+4. Put the same value in C-Plug's private `.env` as `CPLUG_WINCH_TOKEN`, then set `CPLUG_WINCH_ENABLED=1`.
+5. Restart both services.
+
+The secret never enters either SQLite ledger or the UI. C-Plug accepts only an uncredentialed loopback HTTP origin and WINCH accepts only authenticated loopback bridge requests. Delegating an intent always requires a C-Plug approval because it can disclose that intent to an external AI provider. That approval authorizes only the harness dispatch. Every file write, API request, message, device action, or other WINCH proposal receives a separate `W123456` approval code.
+
+Example:
+
+```text
+CPLUG ask my best coding harness to review the parser and independently verify the answer
+CPLUG APPROVE 123456
+CPLUG APPROVE W654321
+```
+
+Use language such as “ask all my AIs,” “form a council,” or “reach consensus” to make WINCH run independent adviser harnesses in parallel before its verifier synthesizes the result. Adviser outputs cannot create additional actions; only the primary proposal enters the typed action gate.
+
 ## Pair iMessage
 
 1. Set `CPLUG_IMESSAGE_ENABLED=1` and restart C-Plug.
@@ -125,6 +149,7 @@ No prompts, messages, recipients, calendar content, URLs, hostnames, credentials
 - Mail drafts and approved sending
 - Exact allowlisted Apple Shortcuts
 - Fixed read-only SSH status checks
+- Authenticated cross-harness delegation through WINCH, with independent verification and separately approved actions
 - Installable PWA shell and LaunchAgent installer
 
 Live research collection is intentionally not connected yet.

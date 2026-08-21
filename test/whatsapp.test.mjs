@@ -79,6 +79,14 @@ test("WhatsApp approval replies use the same six-digit action gate", async (t) =
   assert.equal(f.sent[0].body.text.body, "Approved action completed.");
 });
 
+test("WhatsApp relays namespaced WINCH approval codes", async (t) => {
+  const f = fixture(t);
+  const body = payload({ id: "wamid.synthetic.3", text: "CPLUG REJECT W654321" });
+  assert.equal(f.bridge.acceptWebhook(body, sign(body)), 1);
+  await f.bridge.idle();
+  assert.equal(f.sent[0].body.text.body, "Approved action completed.");
+});
+
 test("WhatsApp rejects invalid signatures before processing JSON", (t) => {
   const f = fixture(t);
   assert.throws(() => f.bridge.acceptWebhook(Buffer.from("not-json"), "sha256=" + "0".repeat(64)), /signature/i);
