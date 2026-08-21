@@ -1,6 +1,6 @@
 # Contributing
 
-K-Stack is an early security-sensitive project. Small, auditable changes with tests are preferred.
+C-Plug is an early security-sensitive project. Small, auditable changes with tests are preferred.
 
 1. Create an issue describing the user outcome and trust-boundary impact.
 2. Never use real messages, addresses, credentials, calendars, SSH hosts, or task history in fixtures or screenshots.

@@ -1,6 +1,6 @@
 # Community metrics collector contract
 
-K-Stack clients do not send metrics unless an HTTPS endpoint is configured and the local user explicitly opts in. The collector is a separate service and is not included in this repository.
+C-Plug clients do not send metrics unless an HTTPS endpoint is configured and the local user explicitly opts in. The collector is a separate service and is not included in this repository.
 
 ## Useful measurements
 

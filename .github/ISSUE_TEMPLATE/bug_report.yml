@@ -22,6 +22,6 @@ body:
   - type: input
     id: version
     attributes:
-      label: K-Stack version
+      label: C-Plug version
     validations:
       required: true

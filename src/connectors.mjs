@@ -65,7 +65,7 @@ function receipt(connector, message, extra = {}) {
 }
 
 export class ConnectorRegistry {
-  constructor({ homeDir = process.env.HOME, shortcutNames = process.env.KSTACK_SHORTCUTS || "", liveEnabled = false } = {}) {
+  constructor({ homeDir = process.env.HOME, shortcutNames = process.env.CPLUG_SHORTCUTS || "", liveEnabled = false } = {}) {
     this.liveEnabled = liveEnabled;
     this.shortcutNames = shortcutNames.split(",").map((item) => item.trim()).filter(Boolean);
     this.sshAliases = exactAliases(path.join(homeDir, ".ssh", "config"));
@@ -81,7 +81,7 @@ export class ConnectorRegistry {
       { id: "whatsapp", name: "WhatsApp", status: whatsappStatus.status, detail: whatsappStatus.detail },
       { id: "calendar", name: "Calendar", status: liveStatus, detail: liveDetail || "Approval required to create" },
       { id: "email", name: "Mail", status: liveStatus, detail: liveDetail || "Drafts local; send requires approval" },
-      { id: "shortcuts", name: "Apple Shortcuts", status: this.liveEnabled ? (this.shortcutNames.length ? "connected" : "setup_required") : "disabled", detail: liveDetail || (this.shortcutNames.length ? `${this.shortcutNames.length} allowlisted` : "Set KSTACK_SHORTCUTS") },
+      { id: "shortcuts", name: "Apple Shortcuts", status: this.liveEnabled ? (this.shortcutNames.length ? "connected" : "setup_required") : "disabled", detail: liveDetail || (this.shortcutNames.length ? `${this.shortcutNames.length} allowlisted` : "Set CPLUG_SHORTCUTS") },
       { id: "ssh", name: "SSH status", status: this.liveEnabled ? (this.sshAliases.length ? "connected" : "setup_required") : "disabled", detail: liveDetail || `${this.sshAliases.length} configured target${this.sshAliases.length === 1 ? "" : "s"}` }
     ];
   }
@@ -90,7 +90,7 @@ export class ConnectorRegistry {
     const payload = action.payload || {};
     const liveTools = new Set(["calendar.list", "calendar.create", "email.draft", "email.send", "home.run_shortcut", "ssh.status"]);
     if (liveTools.has(action.tool) && !this.liveEnabled) {
-      throw new ConnectorError("Live macOS connectors are disabled. Review the permissions and set KSTACK_LIVE_CONNECTORS=1 to enable them.", "live_connectors_disabled");
+      throw new ConnectorError("Live macOS connectors are disabled. Review the permissions and set CPLUG_LIVE_CONNECTORS=1 to enable them.", "live_connectors_disabled");
     }
     switch (action.tool) {
       case "system.none":

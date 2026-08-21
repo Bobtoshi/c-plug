@@ -1,6 +1,6 @@
 {
-  "name": "k-stack",
-  "version": "0.2.0",
+  "name": "c-plug",
+  "version": "0.3.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "author": {
@@ -8,8 +8,9 @@
     "email": "201082672+Bobtoshi@users.noreply.github.com"
   },
   "type": "module",
-  "description": "A local-first personal operations agent with explicit approval boundaries.",
+  "description": "A universal local-first personal AI operator with message channels, typed connectors, approvals, and receipts.",
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "start": "node src/server.mjs",
     "dev": "node --watch src/server.mjs",
     "test": "node --test test/*.test.mjs",
